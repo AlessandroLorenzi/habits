@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>{{ user | title }} Habits List</h1>
-<h2 id="score">
+<div id="score">
     {% include "score.html" %}
-</h2>
+</div>
 <div id="habit-list">
     {% for habit in habits %}
     {% include "habit_card.html" %}

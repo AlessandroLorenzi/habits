@@ -12,6 +12,7 @@ from io import BytesIO
 import base64
 from django.http import HttpResponse
 
+
 class HabitListView(LoginRequiredMixin, ListView):
     model = Habit
     template_name = "habit_list.html"
@@ -22,7 +23,9 @@ class HabitListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["score"] = UserScore.objects.get_or_create(user=self.request.user, date=timezone.now())[0].score
+        context["score"] = UserScore.objects.get_or_create(
+            user=self.request.user, date=timezone.now()
+        )[0].score
         context["user"] = self.request.user
         return context
 
@@ -99,6 +102,7 @@ class HabitCardView(LoginRequiredMixin, View):
             },
         )
 
+
 class YourScoreView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         userscore = UserScore.objects.get_or_create(
@@ -112,6 +116,7 @@ class YourScoreView(LoginRequiredMixin, View):
                 "score": userscore,
             },
         )
+
 
 class HeatmapView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):

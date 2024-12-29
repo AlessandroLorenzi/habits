@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Habit(models.Model):
     name = models.CharField(max_length=255)
     points = models.IntegerField(default=0)
@@ -17,6 +18,7 @@ class UserScore(models.Model):
     user = models.ForeignKey("auth.User", on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
     date = models.DateField(auto_now_add=True)
+
     class Meta:
         unique_together = ("user", "date")
 

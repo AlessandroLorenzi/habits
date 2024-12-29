@@ -1,5 +1,5 @@
 <div class="habit" id="habit-{{ habit.id }}">
-    <strong>{{ habit.name }}</strong> <small> {{ habit.frequency }}
+    <strong class="habit-name">{{ habit.name }}</strong> <small> {{ habit.frequency }}
         [ <a class="pointed" data-hx-get="/edit/{{ habit.id }}" hx-target="#habit-{{ habit.id }}" hx-swap="innerHTML"">edit</a> ]
         [ <a class=" pointed" data-hx-get="/delete/{{ habit.id }}" hx-target="#habit-{{ habit.id }}"
             hx-swap="innerHTML">delete</a> ]
