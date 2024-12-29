@@ -1,0 +1,6 @@
+<form method="post" action="{% url 'habit_update' habit.id %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save Habit</button>
+    [ <a href="{% url 'habit_list' %}">Undo</a> ]
+</form>

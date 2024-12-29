@@ -1,0 +1,7 @@
+<div class="habit">
+    <form method="post" action="/new/">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save Habit</button>
+    </form>
+</div>
