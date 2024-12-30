@@ -1,0 +1,33 @@
+<style>
+    .heatmap {
+        display: grid;
+        grid-template-columns: repeat(21, 1fr);
+        gap: 4px;
+        /* background-color: white; */
+        width: 100%;
+        margin-bottom: 1em;
+        margin-top: 1em;
+    }
+
+    .day {
+        aspect-ratio: 1;
+        border-radius: 2px;
+        padding: 8px;
+        border: 1px solid #ccc;
+    }
+</style>
+
+<h2>Year heatmap!</h2>
+<div class="heatmap">
+    {% for day in calendar_data %}
+    <div class="day" title="{{ day.date }}: {{ day.score }}" style="background-color: {% if day.score > 0 %}
+                                    rgba(0, 128, 0, {{ day.intensity }})
+                                 {% elif day.score < 0 %}
+                                    rgba(255, 0, 0, {{ day.intensity }})
+                                 {% else %}
+                                    white
+                                 {% endif %}">
+        {{ day.score }}
+    </div>
+    {% endfor %}
+</div>

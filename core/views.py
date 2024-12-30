@@ -7,11 +7,9 @@ from django.shortcuts import redirect
 from django.views import View
 from django.shortcuts import render
 from django.utils import timezone
-import numpy as np
-from io import BytesIO
-import base64
-from django.http import HttpResponse
-
+from datetime import datetime, timedelta
+from django.db.models import Sum
+from django.db.models import Max, Min
 
 class HabitListView(LoginRequiredMixin, ListView):
     model = Habit
@@ -27,6 +25,7 @@ class HabitListView(LoginRequiredMixin, ListView):
             user=self.request.user, date=timezone.now()
         )[0].score
         context["user"] = self.request.user
+        context["calendar_data"] = get_calendar_data(self.request.user)
         return context
 
 
@@ -118,7 +117,46 @@ class YourScoreView(LoginRequiredMixin, View):
         )
 
 
+def get_calendar_data(user):
+        end_period = datetime.now().date()
+        start_period = end_period - timedelta(days=365)
+        
+        # Get daily scores
+        daily_scores = UserScore.objects.filter(
+            user=user,
+            date__gte=start_period,
+            date__lte=end_period
+        ).values('date').annotate(
+            total_score=Sum('score')
+        ).order_by('date')
+        
+        # Get max absolute score for normalization
+        max_score = max(
+            abs(daily_scores.aggregate(Max('total_score'))['total_score__max'] or 0),
+            abs(daily_scores.aggregate(Min('total_score'))['total_score__min'] or 0)
+        )
+        
+        scores_dict = {
+            item['date'].strftime('%Y-%m-%d'): item['total_score'] 
+            for item in daily_scores
+        }
+        
+        dates = [
+            (start_period + timedelta(days=x)).strftime('%Y-%m-%d')
+            for x in range(366)
+        ]
+        
+        calendar_data = [
+            {
+                'date': date,
+                'score': scores_dict.get(date, 0),
+                'intensity': abs(scores_dict.get(date, 0)) / max_score if max_score else 0
+            }
+            for date in reversed(dates)
+        ]
+        return calendar_data
+
 class HeatmapView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        userscores = UserScore.objects.filter(user=request.user)
-        # https://www.youtube.com/watch?v=KpjWXZqAUcQ
+        calendar_data = get_calendar_data(request.user)
+        return render(request, 'heatmap.html', {'calendar_data': calendar_data})

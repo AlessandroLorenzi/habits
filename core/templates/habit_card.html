@@ -1,10 +1,11 @@
 <div class="habit" id="habit-{{ habit.id }}">
-    <strong class="habit-name">{{ habit.name }}</strong> <small> {{ habit.frequency }}
-        [ <a class="pointed" data-hx-get="/edit/{{ habit.id }}" hx-target="#habit-{{ habit.id }}" hx-swap="innerHTML"">edit</a> ]
-        [ <a class=" pointed" data-hx-get="/delete/{{ habit.id }}" hx-target="#habit-{{ habit.id }}"
-            hx-swap="innerHTML">delete</a> ]
-    </small> <br />
-    Worth points: {{ habit.points }} <br />
-    [ <a class="pointed" data-hx-get="/complete/{{ habit.id }}" hx-target="#score">Completed</a> ]
-    [ <a class="pointed" data-hx-get="/incomplete/{{ habit.id }}" hx-target="#score">Undo</a> ]
+    <strong class="habit-name">{{ habit.name }}</strong> ({{ habit.points }} points)
+
+    <a class="pointed" data-hx-get="/complete/{{ habit.id }}" hx-target="#score">✅</a>
+    <a class="pointed" data-hx-get="/incomplete/{{ habit.id }}" hx-target="#score">✖️</a>
+    <small style="float: right;">
+        <a class="pointed" data-hx-get="/edit/{{ habit.id }}" hx-target="#habit-{{ habit.id }}" hx-swap="innerHTML"">📝</a>
+        <a class=" pointed" data-hx-get="/delete/{{ habit.id }}" hx-target="#habit-{{ habit.id }}"
+            hx-swap="innerHTML">🗑️</a>
+    </small>
 </div>

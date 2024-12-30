@@ -4,6 +4,8 @@
 <div id="score">
     {% include "score.html" %}
 </div>
+
+
 <div id="habit-list">
     {% for habit in habits %}
     {% include "habit_card.html" %}
@@ -11,5 +13,7 @@
 </div>
 
 <a class="pointed" hx-get="/new/" hx-swap="outerHTML">Create a new habit</a>
+
+{% include "heatmap.html"%}
 
 {% endblock %}
