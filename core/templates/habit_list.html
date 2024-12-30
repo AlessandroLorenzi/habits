@@ -1,10 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>{{ user | title }} Habits List</h1>
+
 <div id="score">
     {% include "score.html" %}
 </div>
-
+<script>
+    htmx.on('habitUpdated', function (evt) {
+        htmx.ajax('GET', '/score/', '#score');
+    });
+</script>
 
 <div id="habit-list">
     {% for habit in habits %}

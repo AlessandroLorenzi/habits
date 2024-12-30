@@ -10,6 +10,8 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from django.db.models import Sum
 from django.db.models import Max, Min
+from django.http import HttpResponse
+
 
 class HabitListView(LoginRequiredMixin, ListView):
     model = Habit
@@ -21,9 +23,9 @@ class HabitListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["score"] = UserScore.objects.get_or_create(
+        context["user_score"] = UserScore.objects.get_or_create(
             user=self.request.user, date=timezone.now()
-        )[0].score
+        )[0]
         context["user"] = self.request.user
         context["calendar_data"] = get_calendar_data(self.request.user)
         return context
@@ -74,8 +76,9 @@ class CompleteTask(LoginRequiredMixin, View):
             date=timezone.now(),
         )[0]
         userscore.score += habit.points
+        userscore.accomplished_habits.add(habit)
         userscore.save()
-        return redirect("your_score")
+        return redirect("habit_card", pk=habit.pk)
 
 
 class IncompleteTask(LoginRequiredMixin, View):
@@ -86,20 +89,26 @@ class IncompleteTask(LoginRequiredMixin, View):
             date=timezone.now(),
         )[0]
         userscore.score -= habit.points
+        userscore.accomplished_habits.remove(habit)
         userscore.save()
-        return redirect("your_score")
+        return redirect("habit_card", pk=habit.pk)
 
 
 class HabitCardView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         habit = Habit.objects.get(pk=kwargs["pk"], owner=request.user)
-        return render(
+        response = render(
             request=request,
             template_name="habit_card.html",
             context={
                 "habit": habit,
+                "user_score": UserScore.objects.get_or_create(
+                    user=self.request.user, date=timezone.now()
+                )[0],
             },
         )
+        response.headers['HX-Trigger'] = 'habitUpdated'
+        return response
 
 
 class YourScoreView(LoginRequiredMixin, View):
@@ -112,51 +121,51 @@ class YourScoreView(LoginRequiredMixin, View):
             request=request,
             template_name="score.html",
             context={
-                "score": userscore,
+                "user_score": userscore,
             },
         )
 
 
 def get_calendar_data(user):
-        end_period = datetime.now().date()
-        start_period = end_period - timedelta(days=365)
-        
-        # Get daily scores
-        daily_scores = UserScore.objects.filter(
-            user=user,
-            date__gte=start_period,
-            date__lte=end_period
-        ).values('date').annotate(
-            total_score=Sum('score')
-        ).order_by('date')
-        
-        # Get max absolute score for normalization
-        max_score = max(
-            abs(daily_scores.aggregate(Max('total_score'))['total_score__max'] or 0),
-            abs(daily_scores.aggregate(Min('total_score'))['total_score__min'] or 0)
+    end_period = datetime.now().date()
+    start_period = end_period - timedelta(days=365)
+
+    # Get daily scores
+    daily_scores = (
+        UserScore.objects.filter(
+            user=user, date__gte=start_period, date__lte=end_period
         )
-        
-        scores_dict = {
-            item['date'].strftime('%Y-%m-%d'): item['total_score'] 
-            for item in daily_scores
+        .values("date")
+        .annotate(total_score=Sum("score"))
+        .order_by("date")
+    )
+
+    # Get max absolute score for normalization
+    max_score = max(
+        abs(daily_scores.aggregate(Max("total_score"))["total_score__max"] or 0),
+        abs(daily_scores.aggregate(Min("total_score"))["total_score__min"] or 0),
+    )
+
+    scores_dict = {
+        item["date"].strftime("%Y-%m-%d"): item["total_score"] for item in daily_scores
+    }
+
+    dates = [
+        (start_period + timedelta(days=x)).strftime("%Y-%m-%d") for x in range(366)
+    ]
+
+    calendar_data = [
+        {
+            "date": date,
+            "score": scores_dict.get(date, 0),
+            "intensity": abs(scores_dict.get(date, 0)) / max_score if max_score else 0,
         }
-        
-        dates = [
-            (start_period + timedelta(days=x)).strftime('%Y-%m-%d')
-            for x in range(366)
-        ]
-        
-        calendar_data = [
-            {
-                'date': date,
-                'score': scores_dict.get(date, 0),
-                'intensity': abs(scores_dict.get(date, 0)) / max_score if max_score else 0
-            }
-            for date in reversed(dates)
-        ]
-        return calendar_data
+        for date in reversed(dates)
+    ]
+    return calendar_data
+
 
 class HeatmapView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         calendar_data = get_calendar_data(request.user)
-        return render(request, 'heatmap.html', {'calendar_data': calendar_data})
+        return render(request, "heatmap.html", {"calendar_data": calendar_data})

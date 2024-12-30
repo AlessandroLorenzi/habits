@@ -18,6 +18,7 @@ class UserScore(models.Model):
     user = models.ForeignKey("auth.User", on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
     date = models.DateField(auto_now_add=True)
+    accomplished_habits = models.ManyToManyField(Habit)
 
     class Meta:
         unique_together = ("user", "date")
