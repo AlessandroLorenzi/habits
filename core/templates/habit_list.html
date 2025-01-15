@@ -12,9 +12,15 @@
 </script>
 
 <div id="habit-list">
-    {% for habit in habits %}
-    {% include "habit_card.html" %}
-    {% endfor %}
+    <table style="width: 100%">
+        <tr>
+            <th>Habit</th>
+            <th>Done</th>
+        </tr>
+        {% for habit in habits %}
+        {% include "habit_card.html" %}
+        {% endfor %}
+    </table>
 </div>
 
 <a class="pointed" hx-get="/new/" hx-swap="outerHTML">Create a new habit</a>

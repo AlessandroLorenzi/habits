@@ -1,19 +1,15 @@
-<div class="habit" id="habit-{{ habit.id }}">
-    <strong class="habit-name">{{ habit.name }}</strong> ({{ habit.points }} points)
+<tr class="habit" id="habit-{{ habit.id }}">
+    <td>
+        <strong class="habit-name">{{ habit.name }}</strong> ({{ habit.points }} points)
+    </td>
+    <td style="text-align: center;">
+        {% if habit in user_score.accomplished_habits.all %}
+        <a class="pointed" id="uncomplete-{{ habit.id }}" data-hx-get="/incomplete/{{ habit.id }}"
+            hx-target="#habit-{{ habit.id }}" hx-swap="outerHTML">✅</a>
+        {% else %}
+        <a class="pointed" id="complete-{{ habit.id }}" data-hx-get="/complete/{{ habit.id }}"
+            hx-target="#habit-{{ habit.id }}" hx-swap="outerHTML">✖️</a>
+        {% endif %}
+    </td>
 
-    {% if habit in user_score.accomplished_habits.all %}
-    <a class="pointed" id="uncomplete-{{ habit.id }}" data-hx-get="/incomplete/{{ habit.id }}"
-        hx-target="#habit-{{ habit.id }}" hx-swap="outerHTML">✅</a>
-    {% else %}
-    <a class="pointed" id="complete-{{ habit.id }}" data-hx-get="/complete/{{ habit.id }}"
-        hx-target="#habit-{{ habit.id }}" hx-swap="outerHTML">✖️</a>
-    {% endif %}
-
-
-
-    <small style="float: right;">
-        <a class="pointed" data-hx-get="/edit/{{ habit.id }}" hx-target="#habit-{{ habit.id }}" hx-swap="innerHTML"">📝</a>
-        <a class=" pointed" data-hx-get="/delete/{{ habit.id }}" hx-target="#habit-{{ habit.id }}"
-            hx-swap="innerHTML">🗑️</a>
-    </small>
-</div>
+</tr>

@@ -10,7 +10,6 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from django.db.models import Sum
 from django.db.models import Max, Min
-from django.http import HttpResponse
 
 
 class HabitListView(LoginRequiredMixin, ListView):
